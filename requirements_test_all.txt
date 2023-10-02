@@ -975,7 +975,7 @@ mullvad-api==1.0.0
 mutagen==1.47.0
 
 # homeassistant.components.mutesync
-mutesync==0.0.1
+mutesync==0.0.2
 
 # homeassistant.components.keenetic_ndms2
 ndms2-client==0.1.2
