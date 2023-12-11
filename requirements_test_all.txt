@@ -221,7 +221,7 @@ aioflo==2021.11.0
 aiogithubapi==22.10.1
 
 # homeassistant.components.guardian
-aioguardian==2022.07.0
+aioguardian==2023.11.0
 
 # homeassistant.components.harmony
 aioharmony==0.2.10
