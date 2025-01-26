@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-import voluptuous as vol
 from vartastorage import vartastorage
+import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.const import (
@@ -27,13 +27,14 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_HOST): str,
         vol.Required(CONF_PORT, default=502): int,
         vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): int,
+        vol.Required("cgi", default=True): bool,
         vol.Optional(CONF_USERNAME, default="user1"): str,
         vol.Optional(CONF_PASSWORD, default=""): str,
     }
 )
 
 
-class VartaStorageHub:
+class VartaHub:
     """Provide methods for GUI configuration."""
 
     def __init__(
@@ -41,6 +42,7 @@ class VartaStorageHub:
         host: str,
         port: int,
         scan_interval: cv.time_period,
+        cgi: bool,
         username: str = None,
         password: str = None,
     ) -> None:
@@ -49,18 +51,18 @@ class VartaStorageHub:
         self.port = port
         self.serial = ""
         self.scan_interval = scan_interval
+        self.cgi = cgi
         self.username = username
         self.password = password
 
     def test_connection(self) -> bool:
         """Tests a connection to the VartaStorage device."""
         varta = vartastorage.VartaStorage(
-            self.host, self.port, self.username, self.password
+            self.host, self.port, self.cgi, self.username, self.password
         )
         try:
-            modbus_data = varta.get_raw_data_modbus()
-            self.serial = modbus_data.serial
-            return bool(varta.modbus_client.connect())
+            self.serial = varta.modbus_client.get_serial()
+            return True
         except ValueError:
             return False
 
@@ -70,14 +72,15 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-    hub = VartaStorageHub(
+
+    hub = VartaHub(
         data["host"],
         data["port"],
         data["scan_interval"],
+        data["cgi"],
         data["username"],
         data["password"],
     )
-
     # Used PyPI package is not built with async, passing to the sync executor.
     if not await hass.async_add_executor_job(hub.test_connection):
         raise CannotConnect
@@ -118,9 +121,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             info = await validate_input(self.hass, user_input)
         except CannotConnect:
             errors["base"] = "cannot_connect"
-        # except Exception:  # pylint: disable=broad-except
-        #    LOGGER.warning("Unexpected exception")
-        #    errors["base"] = "unknown"
+        except Exception as e:  # pylint: disable=broad-except
+            LOGGER.warning("Unexpected exception: %s", e)
+            errors["base"] = "unknown"
         else:
             await self.async_set_unique_id(info["serial"])
             self._abort_if_unique_id_configured()
@@ -140,7 +143,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
-        self.config_entry = config_entry
+        # self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
