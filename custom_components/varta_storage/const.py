@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
+import logging
 from typing import Final
 
 from homeassistant.components.sensor import (
@@ -26,7 +26,7 @@ class VartaSensorEntityDescription(SensorEntityDescription):
     source_key: str | None = None
 
 
-SENSORS: Final[tuple[VartaSensorEntityDescription, ...]] = (
+SENSORS_MODBUS: Final[tuple[VartaSensorEntityDescription, ...]] = (
     VartaSensorEntityDescription(
         key="stateOfCharge",
         name="VARTA State of Charge",
@@ -42,54 +42,6 @@ SENSORS: Final[tuple[VartaSensorEntityDescription, ...]] = (
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
-    ),
-    VartaSensorEntityDescription(
-        key="gridPowerTo",
-        name="VARTA Power To Grid",
-        source_key="to_grid_power",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfPower.WATT,
-    ),
-    VartaSensorEntityDescription(
-        key="gridPowerFrom",
-        name="VARTA Power From Grid",
-        source_key="from_grid_power",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfPower.WATT,
-    ),
-    VartaSensorEntityDescription(
-        key="gridTotalGridACDC",
-        name="VARTA Total Power From Grid",
-        source_key="total_grid_ac_dc",
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
-    ),
-    VartaSensorEntityDescription(
-        key="gridTotalGridDCAC",
-        name="VARTA Total Power To Grid",
-        source_key="total_grid_dc_ac",
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
-    ),
-    VartaSensorEntityDescription(
-        key="inverterTotalACDC",
-        name="VARTA Total Power Charged (Inverter)",
-        source_key="total_inverter_ac_dc",
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
-    ),
-    VartaSensorEntityDescription(
-        key="inverterTotalDCAC",
-        name="VARTA Total Power Discharged (Inverter)",
-        source_key="total_inverter_dc_ac",
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
     ),
     VartaSensorEntityDescription(
         key="state",
@@ -148,6 +100,65 @@ SENSORS: Final[tuple[VartaSensorEntityDescription, ...]] = (
         native_unit_of_measurement=UnitOfPower.WATT,
     ),
     VartaSensorEntityDescription(
+        key="powerChargeTotal",
+        name="VARTA Total Power Charged",
+        source_key="total_charged_energy",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+    ),
+)
+
+SENSORS_CGI: Final[tuple[VartaSensorEntityDescription, ...]] = (
+    VartaSensorEntityDescription(
+        key="cycleCounter",
+        name="VARTA Charging Cycle Counter",
+        source_key="total_charge_cycles",
+        device_class=None,
+        state_class=None,
+        native_unit_of_measurement=None,
+    ),
+    VartaSensorEntityDescription(
+        key="gridPowerFrom",
+        name="VARTA Power From Grid",
+        source_key="total_grid_ac_dc",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+    ),
+    VartaSensorEntityDescription(
+        key="gridPowerTo",
+        name="VARTA Power To Grid",
+        source_key="total_grid_dc_ac",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+    ),
+    VartaSensorEntityDescription(
+        key="gridPowerToTotal",
+        name="VARTA Total Power To Grid",
+        source_key="total_grid_dc_ac",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+    ),
+    VartaSensorEntityDescription(
+        key="gridPowerFromTotal",
+        name="VARTA Total Power From Grid",
+        source_key="total_grid_ac_dc",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+    ),
+    VartaSensorEntityDescription(
+        key="powerDischargeTotal",
+        name="VARTA Total Power Discharged",
+        source_key="total_inverter_dc_ac",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+    ),
+    VartaSensorEntityDescription(
         key="cycleCounter",
         name="VARTA Charging Cycle Counter",
         source_key="total_charge_cycles",
@@ -167,6 +178,22 @@ SENSORS: Final[tuple[VartaSensorEntityDescription, ...]] = (
         key="fan",
         name="VARTA Fan",
         source_key="status_fan",
+        device_class=None,
+        state_class=None,
+        native_unit_of_measurement=None,
+    ),
+    VartaSensorEntityDescription(
+        key="fanSpeed",
+        name="VARTA Fan Speed",
+        source_key="fan_speed",
+        device_class=None,
+        state_class=None,
+        native_unit_of_measurement=None,
+    ),
+    VartaSensorEntityDescription(
+        key="frequencyGrid",
+        name="VARTA Grid Frequency",
+        source_key="frequency_grid",
         device_class=None,
         state_class=None,
         native_unit_of_measurement=None,
