@@ -7,7 +7,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, SENSORS, VartaSensorEntityDescription
+from .const import DOMAIN, SENSORS_MODBUS, SENSORS_CGI, VartaSensorEntityDescription
 
 
 async def async_setup_entry(
@@ -16,9 +16,15 @@ async def async_setup_entry(
     """Initialize the integration."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
 
+    if entry.data["cgi"]:
+        async_add_entities(
+            VartaStorageEntity(coordinator, description=description)
+            for description in SENSORS_CGI
+        )
+
     async_add_entities(
         VartaStorageEntity(coordinator, description=description)
-        for description in SENSORS
+        for description in SENSORS_MODBUS
     )
 
 
@@ -58,7 +64,8 @@ class VartaStorageEntity(CoordinatorEntity, SensorEntity):
             raise Exception(
                 "Invalid entity configuration: source_key is not set in varta entity description."
             )
-        self._attr_native_value = getattr(
-            self.coordinator.data, self.entity_description.source_key
+        self._attr_native_value = self.coordinator.data.get(
+            self.entity_description.source_key
         )
+
         self.async_write_ha_state()
