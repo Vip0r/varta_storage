@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass, fields
 from datetime import timedelta
 
 import async_timeout
@@ -21,46 +22,71 @@ PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up VARTA Storage from a config entry."""
-    varta = vartastorage.VartaStorage(
-        entry.data["host"],
-        entry.data["port"],
-        entry.data["username"],
-        entry.data["password"],
-    )
-    if varta.modbus_client.connect() is False:
-        LOGGER.warning("Could not connect to modbus server")
-        raise ConfigEntryNotReady
 
     # Reload entry when its updated.
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
     async def async_update_data():
-        """Fetch data and pre-process the data from API endpoint."""
+        """Fetch data and preo-process the data from API endpoint."""
 
         def sync_update():
             """Utilizing synchronous task as the used PyPI Package is not built with async."""
-            varta = vartastorage.VartaStorage(entry.data["host"], entry.data["port"])
-            # Collect all data from the device at once
-            varta_data = varta.get_all_data()
+            try:
+                # Collect all data from the device at once
+                v = vartastorage.VartaStorage(
+                    entry.data["host"],
+                    entry.data["port"],
+                    entry.data["cgi"],
+                    entry.data["username"],
+                    entry.data["password"],
+                )
 
-            # Pre-Select the data we plan to use for our sensor entities
-            data = varta_data.modbus_data
+                if entry.data["cgi"]:
+                    r = v.get_all_data()
+                else:
+                    r = v.get_all_data_modbus()
+            except Exception:
+                try:
+                    # This is a bit ugly but at least my device is very unresponsible and we just go to try it a second time before raising an exception
+                    v = vartastorage.VartaStorage(
+                        entry.data["host"],
+                        entry.data["port"],
+                        entry.data["cgi"],
+                        entry.data["username"],
+                        entry.data["password"],
+                    )
 
-            def addCgiData(data, endpoint, attribute):
-                """Adding additional data if the cgi endpoint is available."""
-                if hasattr(endpoint, attribute):
-                    setattr(data, attribute, getattr(endpoint, attribute))
+                    if entry.data["cgi"]:
+                        r = v.get_all_data()
+                    else:
+                        r = v.get_all_data_modbus()
+                except Exception as e:
+                    LOGGER.Info("Can not retrieve Data from the VARTA Device. %s", e)
+                    raise UpdateFailed(
+                        "Can not retrieve Data from the VARTA Device."
+                    ) from Exception
 
-            addCgiData(data, varta_data.service_data, "status_fan")
-            addCgiData(data, varta_data.service_data, "status_main")
-            addCgiData(data, varta_data.service_data, "hours_until_filter_maintenance")
-            addCgiData(data, varta_data.energy_data, "total_grid_ac_dc")
-            addCgiData(data, varta_data.energy_data, "total_grid_dc_ac")
-            addCgiData(data, varta_data.energy_data, "total_inverter_ac_dc")
-            addCgiData(data, varta_data.energy_data, "total_inverter_dc_ac")
-            addCgiData(data, varta_data.energy_data, "total_charge_cycles")
+            # Flatten dataclass
 
-            return data
+            def flatten_dataclass(obj: Any) -> Dict[str, Any]:
+                flat_dict = {}
+
+                if hasattr(obj, "__dataclass_fields__"):  # Check if it's a dataclass
+                    for field in fields(obj):
+                        value = getattr(obj, field.name)
+                        if hasattr(value, "__dataclass_fields__"):  # Nested dataclass
+                            # Recursively flatten nested dataclass
+                            flat_dict.update(
+                                {f"{k}": v for k, v in flatten_dataclass(value).items()}
+                            )
+                        else:
+                            flat_dict[field.name] = value
+                else:
+                    flat_dict = {str(obj): obj}  # If it's not a dataclass, return as is
+
+                return flat_dict
+
+            return flatten_dataclass(r)
 
         try:
             async with async_timeout.timeout(10):
@@ -79,6 +105,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         update_method=async_update_data,
         # Polling interval. Will only be polled if there are subscribers.
         update_interval=scan_interval,
+        always_update=False,
     )
 
     await coordinator.async_config_entry_first_refresh()
@@ -106,3 +133,10 @@ async def async_unload_entry(
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
+
+
+async def update_listener(hass, entry):
+    """Handle options update."""
+    LOGGER.info("Config options update in GUI")
+    await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    await hass.config_entries.async_reload(entry.entry_id)
