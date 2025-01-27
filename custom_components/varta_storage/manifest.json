@@ -7,9 +7,10 @@
   ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://www.home-assistant.io/integrations/varta_storage",
+  "documentation": "https://github.com/Vip0r/varta_storage/issues",
   "homekit": {},
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/balloob/hue/issues",
   "requirements": [
     "vartastorage==0.3.6"
   ],
