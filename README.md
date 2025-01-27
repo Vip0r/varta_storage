@@ -14,7 +14,7 @@ Platform | Description
 `sensor` | Shows various information's from the VARTA Batteries like current charge/discharge power, state of charge, maintenance informations, fan status, totals for consumption, power to grid and power from grid
 
 ## HACS Installation
-1. Follow the official [HACS Docuementation](https://www.hacs.xyz/docs/faq/custom_repositories/) to add this repository as a custom repository
+1. Follow the official [HACS Documentation](https://www.hacs.xyz/docs/faq/custom_repositories/) to add this repository as a custom repository
 2. Search "VARTA Storage" in the HACS Store
 3. Download the integration
 
