@@ -1,7 +1,7 @@
 {
   "domain": "varta_storage",
   "name": "VARTA Storage",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "codeowners": [
     "@Vip0r"
   ],
