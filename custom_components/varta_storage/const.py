@@ -159,22 +159,6 @@ SENSORS_CGI: Final[tuple[VartaSensorEntityDescription, ...]] = (
         native_unit_of_measurement=None,
     ),
     VartaSensorEntityDescription(
-        key="gridPowerFrom",
-        name="VARTA Power From Grid",
-        source_key="total_grid_ac_dc",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
-    ),
-    VartaSensorEntityDescription(
-        key="gridPowerTo",
-        name="VARTA Power To Grid",
-        source_key="total_grid_dc_ac",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfPower.WATT,
-    ),
-    VartaSensorEntityDescription(
         key="gridPowerToTotal",
         name="VARTA Total Power To Grid",
         source_key="total_grid_dc_ac",
@@ -197,14 +181,6 @@ SENSORS_CGI: Final[tuple[VartaSensorEntityDescription, ...]] = (
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
-    ),
-    VartaSensorEntityDescription(
-        key="cycleCounter",
-        name="VARTA Charging Cycle Counter",
-        source_key="total_charge_cycles",
-        device_class=None,
-        state_class=None,
-        native_unit_of_measurement=None,
     ),
     VartaSensorEntityDescription(
         key="maintnanceFilterDueIn",
