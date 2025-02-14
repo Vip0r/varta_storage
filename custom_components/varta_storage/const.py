@@ -164,7 +164,7 @@ SENSORS_CGI: Final[tuple[VartaSensorEntityDescription, ...]] = (
         source_key="total_grid_ac_dc",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfPower.WATT_HOUR,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
     ),
     VartaSensorEntityDescription(
         key="gridPowerTo",
