@@ -11,7 +11,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, UnitOfEnergy, UnitOfPower, UnitOfTime
+from homeassistant.const import PERCENTAGE, UnitOfEnergy, UnitOfPower, UnitOfTime, UnitOfApparentPower
 
 DOMAIN = "varta_storage"
 LOGGER = logging.getLogger(__name__)
@@ -121,7 +121,7 @@ SENSORS_MODBUS: Final[tuple[VartaSensorEntityDescription, ...]] = (
         source_key="apparent_power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfPower.WATT,
+        native_unit_of_measurement=UnitOfApparentPower.VOLT_AMPERE,
     ),
     VartaSensorEntityDescription(
         key="powerCharge",
