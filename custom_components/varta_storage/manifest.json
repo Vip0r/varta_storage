@@ -12,7 +12,7 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/balloob/hue/issues",
   "requirements": [
-    "vartastorage==0.3.8"
+    "vartastorage==0.3.9"
   ],
   "ssdp": [],
   "zeroconf": []
