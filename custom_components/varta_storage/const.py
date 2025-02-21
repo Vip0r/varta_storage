@@ -164,7 +164,7 @@ SENSORS_CGI: Final[tuple[VartaSensorEntityDescription, ...]] = (
         source_key="total_grid_dc_ac",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
     ),
     VartaSensorEntityDescription(
         key="gridPowerFromTotal",
@@ -172,7 +172,7 @@ SENSORS_CGI: Final[tuple[VartaSensorEntityDescription, ...]] = (
         source_key="total_grid_ac_dc",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
     ),
     VartaSensorEntityDescription(
         key="inverterDischarged",
@@ -180,7 +180,7 @@ SENSORS_CGI: Final[tuple[VartaSensorEntityDescription, ...]] = (
         source_key="total_inverter_dc_ac",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
     ),
     VartaSensorEntityDescription(
         key="inverterCharged",
@@ -188,7 +188,7 @@ SENSORS_CGI: Final[tuple[VartaSensorEntityDescription, ...]] = (
         source_key="total_inverter_ac_dc",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
     ),
     VartaSensorEntityDescription(
         key="maintnanceFilterDueIn",
