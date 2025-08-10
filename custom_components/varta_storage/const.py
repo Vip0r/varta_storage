@@ -16,7 +16,7 @@ from homeassistant.const import PERCENTAGE, UnitOfEnergy, UnitOfPower, UnitOfTim
 DOMAIN = "varta_storage"
 LOGGER = logging.getLogger(__name__)
 
-DEFAULT_SCAN_INTERVAL = 1
+DEFAULT_SCAN_INTERVAL = 10
 
 
 @dataclass
