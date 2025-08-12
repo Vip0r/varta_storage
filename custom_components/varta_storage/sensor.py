@@ -7,25 +7,31 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, SENSORS_MODBUS, SENSORS_CGI, VartaSensorEntityDescription
+from .const import DOMAIN, SENSORS_CGI, SENSORS_MODBUS, VartaSensorEntityDescription
 
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Initialize the integration."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinators = hass.data[DOMAIN][entry.entry_id]
+    modbus_coordinator = coordinators["modbus"]
+    cgi_coordinator = coordinators.get("cgi")
 
-    if entry.data["cgi"]:
-        async_add_entities(
-            VartaStorageEntity(coordinator, description=description)
+    entities = []
+
+    if entry.data.get("cgi") and cgi_coordinator:
+        entities.extend(
+            VartaStorageEntity(cgi_coordinator, description=description)
             for description in SENSORS_CGI
         )
 
-    async_add_entities(
-        VartaStorageEntity(coordinator, description=description)
+    entities.extend(
+        VartaStorageEntity(modbus_coordinator, description=description)
         for description in SENSORS_MODBUS
     )
+
+    async_add_entities(entities)
 
 
 class VartaStorageEntity(CoordinatorEntity, SensorEntity):
