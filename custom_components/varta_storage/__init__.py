@@ -10,111 +10,204 @@ from vartastorage import vartastorage
 
 from homeassistant import config_entries, core
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_SCAN_INTERVAL, Platform
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, LOGGER
+from .const import DOMAIN, LOGGER
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
-
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up VARTA Storage from a config entry."""
 
-    # Reload entry when its updated.
+    required_fields = ["scan_interval_modbus", "scan_interval_cgi", "host", "host_cgi", "port", "username", "password"]
+    missing_fields = [field for field in required_fields if field not in entry.data]
+    if missing_fields:
+        message = (
+            f"The new version of VARTA Storage integration requires reconfiguration due to newly introduced configuration options"
+            "Please [reconfigure the integration](/config/integrations/dashboard) in Home Assistant."
+        )
+        LOGGER.error(message)
+        # Display notification in Home Assistant GUI
+        hass.async_create_task(
+            hass.services.async_call(
+                "persistent_notification",
+                "create",
+                {
+                    "title": "VARTA Storage Integration Requires Reconfiguration",
+                    "message": message,
+                    "notification_id": "varta_storage_reconfigure",
+                },
+                blocking=False,
+            )
+        )
+        raise ConfigEntryNotReady(
+            f"Missing required fields: {', '.join(missing_fields)}. Please reconfigure the integration."
+        )
+
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
-    async def async_update_data():
-        """Fetch data and preo-process the data from API endpoint."""
+    scan_interval_modbus = timedelta(seconds=entry.data["scan_interval_modbus"])
+    scan_interval_cgi = timedelta(seconds=entry.data["scan_interval_cgi"])
 
+    def flatten_dataclass(obj: Any) -> Dict[str, Any]:
+        flat_dict = {}
+        if hasattr(obj, "__dataclass_fields__"):
+            for field in fields(obj):
+                value = getattr(obj, field.name)
+                if hasattr(value, "__dataclass_fields__"):
+                    flat_dict.update(
+                        {f"{k}": v for k, v in flatten_dataclass(value).items()}
+                    )
+                else:
+                    flat_dict[field.name] = value
+        else:
+            flat_dict = {str(obj): obj}
+        return flat_dict
+
+    async def async_update_modbus():
         def sync_update():
-            """Utilizing synchronous task as the used PyPI Package is not built with async."""
             try:
-                # Collect all data from the device at once
                 v = vartastorage.VartaStorage(
                     entry.data["host"],
                     entry.data["port"],
-                    entry.data["cgi"],
+                    False,
+                    entry.data["username"],
+                    entry.data["password"],
+                )
+                print("getting modbus data")
+                r = v.get_all_data_modbus()
+
+            except Exception:
+                try:
+                    v = vartastorage.VartaStorage(
+                        entry.data["host"],
+                        entry.data["port"],
+                        False,
+                        entry.data["username"],
+                        entry.data["password"],
+                    )
+                    print("getting modbus data after first exception")
+                    r = v.get_all_data_modbus()
+                except Exception as e:
+                    LOGGER.info("Can not retrieve Modbus Data from the VARTA Device. %s", e)
+                    raise UpdateFailed("Can not retrieve Modbus Data from the VARTA Device.") from Exception
+            return flatten_dataclass(r)
+        try:
+            async with async_timeout.timeout(10):
+                return await hass.async_add_executor_job(sync_update)
+        except ValueError as api_error:
+            raise UpdateFailed("Error communicating with Modbus API") from api_error
+
+    async def async_update_cgi():
+        def sync_update():
+
+            try:
+                if entry.data["host_cgi"] == "":
+                    host = entry.data["host"]
+                else:
+                    host = entry.data["host_cgi"]
+
+                v = vartastorage.VartaStorage(
+                    host,
+                    entry.data["port"],
+                    True,
                     entry.data["username"],
                     entry.data["password"],
                 )
 
-                if entry.data["cgi"]:
-                    r = v.get_all_data()
-                else:
-                    r = v.get_all_data_modbus()
+                print("getting cgi data")
+                EmsData = v.get_ems_cgi()
+                EnergyData = v.get_energy_cgi()
+                InfoData = v.get_info_cgi()
+                ServiceData = v.get_service_cgi()
+
+                @dataclass
+                class VarataStorageData:
+                    EmsData: v.get_ems_cgi()
+                    EnergyData: v.get_energy_cgi()
+                    InfoData: v.get_info_cgi()
+                    ServiceData: v.get_service_cgi()
+
+                # Some post processing to the data
+                if isinstance(EnergyData.total_charge_cycles, list) and len(EnergyData.total_charge_cycles) == 1:
+                    EnergyData.total_charge_cycles = EnergyData.total_charge_cycles[0]
+
+                r = VarataStorageData(EmsData=EmsData, EnergyData=EnergyData, InfoData=InfoData, ServiceData=ServiceData)
+
+
             except Exception:
                 try:
-                    # This is a bit ugly but at least my device is very unresponsible and we just go to try it a second time before raising an exception
+                    if entry.data["host_cgi"] == "":
+                        host = entry.data["host"]
+                    else:
+                        host = entry.data["host_cgi"]
+
                     v = vartastorage.VartaStorage(
-                        entry.data["host"],
+                        host,
                         entry.data["port"],
-                        entry.data["cgi"],
+                        True,
                         entry.data["username"],
                         entry.data["password"],
                     )
 
-                    if entry.data["cgi"]:
-                        r = v.get_all_data()
-                    else:
-                        r = v.get_all_data_modbus()
+                    print("getting cgi data after first exception")
+
+                    @dataclass
+                    class VarataStorageData:
+                        EmsData: v.get_ems_cgi()
+                        EnergyData: v.get_energy_cgi()
+                        InfoData: v.get_info_cgi()
+                        ServiceData: v.get_service_cgi()
+
+                    # Some post processing to the data
+                    if isinstance(EnergyData.total_charge_cycles, list) and len(EnergyData.total_charge_cycles) == 1:
+                        EnergyData.total_charge_cycles = EnergyData.total_charge_cycles[0]
+
+                    r = VarataStorageData(EmsData=EmsData, EnergyData=EnergyData, InfoData=InfoData, ServiceData=ServiceData)
+
                 except Exception as e:
-                    LOGGER.Info("Can not retrieve Data from the VARTA Device. %s", e)
-                    raise UpdateFailed(
-                        "Can not retrieve Data from the VARTA Device."
-                    ) from Exception
-
-            # Flatten dataclass
-
-            def flatten_dataclass(obj: Any) -> Dict[str, Any]:
-                flat_dict = {}
-
-                if hasattr(obj, "__dataclass_fields__"):  # Check if it's a dataclass
-                    for field in fields(obj):
-                        value = getattr(obj, field.name)
-                        if hasattr(value, "__dataclass_fields__"):  # Nested dataclass
-                            # Recursively flatten nested dataclass
-                            flat_dict.update(
-                                {f"{k}": v for k, v in flatten_dataclass(value).items()}
-                            )
-                        else:
-                            flat_dict[field.name] = value
-                else:
-                    flat_dict = {str(obj): obj}  # If it's not a dataclass, return as is
-
-                return flat_dict
-
+                    LOGGER.info("Can not retrieve CGI Data from the VARTA Device. %s", e)
+                    raise UpdateFailed("Can not retrieve CGI Data from the VARTA Device.") from Exception
             return flatten_dataclass(r)
-
         try:
             async with async_timeout.timeout(10):
-                # Call synchronous task to update the sensor values
                 return await hass.async_add_executor_job(sync_update)
         except ValueError as api_error:
-            raise UpdateFailed("Error communicating with API") from api_error
+            raise UpdateFailed("Error communicating with CGI API") from api_error
 
-    scan_interval = timedelta(seconds=entry.data["scan_interval"])
+    coordinators = {}
 
-    coordinator = DataUpdateCoordinator(
+    # Always create Modbus coordinator
+    modbus_coordinator = DataUpdateCoordinator(
         hass,
         LOGGER,
-        # Name of the data. For logging purposes.
-        name="sensor",
-        update_method=async_update_data,
-        # Polling interval. Will only be polled if there are subscribers.
-        update_interval=scan_interval,
+        name="modbus_sensor",
+        update_method=async_update_modbus,
+        update_interval=scan_interval_modbus,
         always_update=False,
     )
+    await modbus_coordinator.async_config_entry_first_refresh()
+    coordinators["modbus"] = modbus_coordinator
 
-    await coordinator.async_config_entry_first_refresh()
+    # Optionally create CGI coordinator
+    if entry.data.get("cgi"):
+        cgi_coordinator = DataUpdateCoordinator(
+            hass,
+            LOGGER,
+            name="cgi_sensor",
+            update_method=async_update_cgi,
+            update_interval=scan_interval_cgi,
+            always_update=False,
+        )
+        await cgi_coordinator.async_config_entry_first_refresh()
+        coordinators["cgi"] = cgi_coordinator
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinators
 
-    # Forward the setup to the sensor platform.
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
     return True
 
 
