@@ -1,53 +1,61 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Device is already configured"
+    },
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error"
+    },
     "step": {
       "user": {
         "data": {
-          "host": "[%key:common::config_flow::data::host%]",
+          "host": "Host / IP for Modbus",
+          "password": "Password (CGI)",
+          "cgi": "Enable CGI",
+          "host_cgi": "Host / IP for CGI Endpoint",
           "port": "Port (Modbus)",
-          "scan_interval": "Scan Interval (seconds)",
-          "modbus_only": "Modbus Only",
+          "scan_interval_modbus": "Scan Interval Modbus (seconds)",
           "username": "Username (CGI)",
-          "password": "Password (CGI)"
+          "scan_interval_cgi": "Scan Interval CGI (seconds)"
         },
-        "description": "Provide the relevant connection details. Please refer to the documentation if a field is unclear.",
         "data_description": {
-          "scan_interval": "Frequency of polling new data from the device in seconds",
-          "host": "IP or Hostname",
-          "port": "Port the Modbus server is listening",
+          "host": "Host / IP for Modbus",
           "password": "Not all devices provide CGI Endpoints. If so, the integration will fetch additional data. Leave empty if you have a CGI endpoint but no password auth",
-          "modbus_only": "Only fetch data from Modbus"
-        }
+          "cgi": "Fetch also data from the CGI Endpoint",
+          "host_cgi": "Host / IP for CGI Endpoint",
+          "port": "Port the Modbus server is listening",
+          "scan_interval_modbus": "Frequency of polling new data from the device in seconds",
+          "scan_interval_cgi": "Frequency of polling new data from the CGI Endpoint in seconds"
+        },
+        "description": "Provide the relevant connection details. Please refer to the documentation if a field is unclear."
       }
-    },
-    "error": {
-      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
-      "unknown": "[%key:common::config_flow::error::unknown%]"
-    },
-    "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
     }
   },
   "options": {
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Scan Interval (seconds)",
-          "host": "Host",
+          "host": "Host / IP for Modbus",
+          "password": "Password (CGI)",
+          "cgi": "Enable CGI",
+          "host_cgi": "Host / IP for CGI Endpoint",
           "port": "Port (Modbus)",
-          "modbus_only": "Modbus Only",
+          "scan_interval_modbus": "Scan Interval (seconds)",
           "username": "Username (CGI)",
-          "password": "Password (CGI)"
+          "scan_interval_cgi": "Scan Interval CGI (seconds)"
         },
-        "description": "These values allow tweaking the VARTA Storage Integration. Please refer to the documentation if a field is unclear.",
         "data_description": {
-          "scan_interval": "Frequency of polling new data from the device in seconds",
-          "host": "IP or Hostname",
-          "port": "Port the Modbus server is listening",
+          "host": "Host / IP for Modbus",
           "password": "Not all devices provide CGI Endpoints. If so, the integration will fetch additional data. Leave empty if you have a CGI endpoint but no password auth",
-          "modbus_only": "Only fetch data from Modbus"
-      }
+          "cgi": "Fetch also data from the CGI Endpoint",
+          "host_cgi": "Host / IP for CGI Endpoint",
+          "port": "Port the Modbus server is listening",
+          "scan_interval_modbus": "Frequency of polling new data from the device in seconds",
+          "scan_interval_cgi": "Frequency of polling new data from the CGI Endpoint in seconds"
+        },
+        "description": "These values allow tweaking the VARTA Storage Integration. Please refer to the documentation if a field is unclear."
       }
     }
   }
