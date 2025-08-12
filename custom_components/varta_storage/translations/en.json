@@ -1,54 +1,62 @@
 {
-    "config": {
-        "abort": {
-            "already_configured": "Device is already configured"
-        },
-        "error": {
-            "cannot_connect": "Failed to connect",
-            "invalid_auth": "Invalid authentication",
-            "unknown": "Unexpected error"
-        },
-        "step": {
-            "user": {
-                "data": {
-                    "host": "Host",
-                    "password": "Password (CGI)",
-                    "cgi": "Enable CGI",
-                    "port": "Port (Modbus)",
-                    "scan_interval": "Scan Interval (seconds)",
-                    "username": "Username (CGI)"
-                },
-                "data_description": {
-                    "host": "IP or Hostname",
-                    "password": "Not all devices provide CGI Endpoints. If so, the integration will fetch additional data. Leave empty if you have a CGI endpoint but no password auth",
-                    "cgi": "Fetch also data from the CGI Endpoint",
-                    "port": "Port the Modbus server is listening",
-                    "scan_interval": "Frequency of polling new data from the device in seconds"
-                },
-                "description": "Provide the relevant connection details. Please refer to the documentation if a field is unclear."
-            }
-        }
+  "config": {
+    "abort": {
+      "already_configured": "Device is already configured"
     },
-    "options": {
-        "step": {
-            "init": {
-                "data": {
-                    "host": "Host",
-                    "password": "Password (CGI)",
-                    "cgi": "Enable CGI",
-                    "port": "Port (Modbus)",
-                    "scan_interval": "Scan Interval (seconds)",
-                    "username": "Username (CGI)"
-                },
-                "data_description": {
-                    "host": "IP or Hostname",
-                    "password": "Not all devices provide CGI Endpoints. If so, the integration will fetch additional data. Leave empty if you have a CGI endpoint but no password auth",
-                    "cgi": "Fetch also data from the CGI Endpoint",
-                    "port": "Port the Modbus server is listening",
-                    "scan_interval": "Frequency of polling new data from the device in seconds"
-                },
-                "description": "These values allow tweaking the VARTA Storage Integration. Please refer to the documentation if a field is unclear."
-            }
-        }
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "host": "Host / IP for Modbus",
+          "password": "Password (CGI)",
+          "cgi": "Enable CGI",
+          "host_cgi": "Host / IP for CGI Endpoint",
+          "port": "Port (Modbus)",
+          "scan_interval_modbus": "Scan Interval Modbus (seconds)",
+          "username": "Username (CGI)",
+          "scan_interval_cgi": "Scan Interval CGI (seconds)"
+        },
+        "data_description": {
+          "host": "Host / IP for Modbus",
+          "password": "Not all devices provide CGI Endpoints. If so, the integration will fetch additional data. Leave empty if you have a CGI endpoint but no password auth",
+          "cgi": "Fetch also data from the CGI Endpoint",
+          "host_cgi": "Host / IP for CGI Endpoint (leave empty to use modbus host)",
+          "port": "Port the Modbus server is listening",
+          "scan_interval_modbus": "Frequency of polling new data from the device in seconds",
+          "scan_interval_cgi": "Frequency of polling new data from the CGI Endpoint in seconds"
+        },
+        "description": "Provide the relevant connection details. Please refer to the documentation if a field is unclear."
+      }
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "host": "Host / IP for Modbus",
+          "password": "Password (CGI)",
+          "cgi": "Enable CGI",
+          "host_cgi": "Host / IP for CGI Endpoint",
+          "port": "Port (Modbus)",
+          "scan_interval_modbus": "Scan Interval (seconds)",
+          "username": "Username (CGI)",
+          "scan_interval_cgi": "Scan Interval CGI (seconds)"
+        },
+        "data_description": {
+          "host": "Host / IP for Modbus",
+          "password": "Not all devices provide CGI Endpoints. If so, the integration will fetch additional data. Leave empty if you have a CGI endpoint but no password auth",
+          "cgi": "Fetch also data from the CGI Endpoint",
+          "host_cgi": "Host / IP for CGI Endpoint (leave empty to use modbus host)",
+          "port": "Port the Modbus server is listening",
+          "scan_interval_modbus": "Frequency of polling new data from the device in seconds",
+          "scan_interval_cgi": "Frequency of polling new data from the CGI Endpoint in seconds"
+        },
+        "description": "These values allow tweaking the VARTA Storage Integration. Please refer to the documentation if a field is unclear."
+      }
+    }
+  }
 }
