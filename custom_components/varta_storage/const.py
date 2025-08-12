@@ -11,12 +11,13 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, UnitOfEnergy, UnitOfPower, UnitOfTime, UnitOfApparentPower
+from homeassistant.const import PERCENTAGE, UnitOfEnergy, UnitOfPower, UnitOfTime
 
 DOMAIN = "varta_storage"
 LOGGER = logging.getLogger(__name__)
 
-DEFAULT_SCAN_INTERVAL = 10
+DEFAULT_SCAN_INTERVAL_MODBUS = 3
+DEFAULT_SCAN_INTERVAL_CGI = 10
 
 
 @dataclass
@@ -121,7 +122,7 @@ SENSORS_MODBUS: Final[tuple[VartaSensorEntityDescription, ...]] = (
         source_key="apparent_power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfApparentPower.VOLT_AMPERE,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
     ),
     VartaSensorEntityDescription(
         key="powerCharge",
