@@ -1,7 +1,7 @@
 {
   "domain": "varta_storage",
   "name": "VARTA Storage",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "codeowners": ["@Vip0r"],
   "config_flow": true,
   "dependencies": [],
@@ -9,7 +9,7 @@
   "homekit": {},
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/Vip0r/varta_storage/issues",
-  "requirements": ["vartastorage==0.4.2"],
+  "requirements": ["vartastorage==0.4.3"],
   "ssdp": [],
   "zeroconf": []
 }
